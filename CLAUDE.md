@@ -56,13 +56,17 @@ This keeps the lesson scannable and prevents everything from blending into one f
 
 ### Step 6: Auth & Middleware (not started)
 - Lesson 12: Middleware and CORS — request/response processing, cross-origin setup
-- Lesson 13: Authentication — OAuth2 password flow, JWT tokens, protecting routes
+- Lesson 13: Authentication — OAuth2 password flow, JWT tokens, API tokens, protecting routes
 
 ### Step 7: Testing (not started)
 - Lesson 14: TestClient + pytest — writing and running API tests
 
-### Step 8: Build a Real Project (not started)
-- Pick a small project (task manager API, bookmark service, etc.)
+### Step 8: Security (not started)
+- Lesson 15: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI
+
+### Step 9: Build a Real Project (not started)
+- Build a Gator Days comic API — scrape comic data from Reddit, store it through our own FastAPI endpoints, serve it back out
+- Use httpx as the client to call our own API, closing the full client/server loop
 - Apply everything learned — routes, models, database, auth, tests
 
 ## Project Structure

@@ -65,19 +65,48 @@ def root():
     return {"message": "hello world"}
 ```
 
-Let's break this down piece by piece:
+Let's break this down piece by piece.
 
-- `@app.get("/")` — This is the decorator. It says "when someone sends a **GET** request to the path `/` (the root URL), run the function below." The `.get` part maps to the HTTP method. There's also `@app.post()`, `@app.put()`, `@app.delete()` — one for each HTTP method you learned in Lesson 01.
+- `@app.get("/")` - `app` is your FastAPI object. When you did `app = FastAPI()`, that created an object with methods like `.get()`, `.post()`, `.put()`, `.delete()` built into it. So `app.get("/")` is calling the `.get()` method on your FastAPI object with the path `"/"`.
 
-- `def root():` — Just a regular Python function. The name doesn't matter to FastAPI (you could call it `banana` and it would work the same). But use descriptive names for your own sanity.
+  This decorator says "when someone sends a **GET** request to the path `/` (the root URL), run the function below." There's also `@app.post()`, `@app.put()`, `@app.delete()` — one for each HTTP method you learned in Lesson 01.
 
-- `return {"message": "hello world"}` — You return a Python dictionary, and FastAPI automatically converts it to JSON and sends it back with a `200 OK` status code and `Content-Type: application/json` header. All that HTTP stuff from Lesson 01 — FastAPI handles it for you.
+- `def root():` - Just a regular Python function. The name doesn't matter to FastAPI (you could call it `banana` and it would work the same). But use descriptive names for your own sanity.
+
+- `return {"message": "hello world"}` - You return a Python dictionary, and FastAPI automatically converts it to JSON and sends it back with a `200 OK` status code and `Content-Type: application/json` header. All that HTTP stuff from Lesson 01 — FastAPI handles it for you.
 
 So when a client sends `GET /`, they get back:
 
 ```json
 {"message": "hello world"}
 ```
+
+---
+
+### `@` — How Decorators Work Here
+
+How does Python know that `@` does anything special? The `@` symbol is Python's **decorator syntax**. A decorator is a function that wraps another function to add behavior to it.
+
+When Python sees this:
+
+```python
+@app.get("/")
+def root():
+    return {"message": "hello world"}
+```
+
+It's essentially doing this behind the scenes:
+
+```python
+def root():
+    return {"message": "hello world"}
+
+root = app.get("/")(root)
+```
+
+So `app.get("/")` takes your `root` function and **registers** it internally — "when a GET request comes in for `/`, call this function." Your function still exists, but now FastAPI knows about it and will call it when the right request arrives.
+
+You don't need to understand the full mechanics of how decorators work internally right now. The mental model is: **`@app.get("/")` tells your FastAPI app "hook this function up to this path and method."**
 
 ---
 

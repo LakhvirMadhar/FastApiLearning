@@ -10,7 +10,9 @@ Lessons go in `lessons/fastapi/` as `lesson_XX_name.md`. Each lesson follows thi
 3. **Concepts** — explain the new concepts with examples
 4. **Your Task** — specific instructions for what to type and try
 
-Keep explanations conversational and verbose — not just reference tables or terse bullet points. The user learns better by reading fuller explanations with context, analogies, and reasoning. Short one-liners get skimmed and don't stick. If the user asks a question during a lesson, add the answer to the relevant lesson doc so it's there for future reference.
+Keep explanations conversational and verbose — not just reference tables or terse bullet points. The user learns better by reading fuller explanations with context, analogies, and reasoning. Short one-liners get skimmed and don't stick. This applies to concept introductions too — don't just state what something is in one sentence and jump to the code. Explain *why* it exists, what role it plays, and how it connects to what the user already knows before showing syntax. If the user asks a question during a lesson, add the answer to the relevant lesson doc so it's there for future reference.
+
+"Conversational" means explaining the *why* and connecting concepts — not adding filler words like "Remember,", "You might be wondering:", "Let's think about this:", etc. Get to the point while still being thorough.
 
 In the "Your Task" section, don't include minimum counts like "at least 3" or "at least 4 endpoints." The point is learning the concept, not hitting a quota. Just describe what to build and let the user decide how much to include.
 
@@ -24,7 +26,8 @@ In the "Your Task" section, don't include minimum counts like "at least 3" or "a
 When explaining concepts that have sub-components (e.g., a decorator with parameters, a Pydantic model with field types), use a clear heading hierarchy so it's obvious what belongs to what:
 - The **main concept** gets an `###` heading formatted as `### \`name\``
 - Its **sub-components** get an `####` heading underneath: `#### Parameters:` or `#### Fields:`
-- Each individual item is a bullet point under that heading
+
+In bullet point explanations, use a single dash (`-`) to separate the term from the explanation, not an em-dash (`—`). Em-dashes are fine in regular prose, just not in bullet points where they add visual clutter.
 
 This keeps the lesson scannable and prevents everything from blending into one flat wall of text.
 

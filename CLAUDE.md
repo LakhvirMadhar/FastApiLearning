@@ -84,6 +84,7 @@ FastApiLearning/
 ├── CLAUDE.md
 ├── lessons/
 │   └── fastapi/
+├── quizzes/
 ├── src/
 │   └── main.py
 ├── tests/
@@ -106,9 +107,16 @@ src/
 ### Rules
 - Practice code goes in `src/`
 - Lesson docs go in `lessons/fastapi/`
+- Quiz files go in `quizzes/` — questions and answers are separate files
 - Test files go in `tests/`
 - File names use snake_case (Python convention)
 - One concept per lesson — don't cram multiple topics into one file
+
+### Quizzes
+Quizzes use spaced repetition — each new quiz includes questions from previous quizzes plus new material. This forces recall of earlier concepts over time.
+- Questions file: `quiz_XX_lessons_XX_to_XX.md` (never changes)
+- Answers file: `quiz_XX_answers.md` (where the user writes answers)
+- Future quizzes recycle old questions and add new ones from the latest lessons
 
 ## How It Works
 - Claude writes a lesson doc in `lessons/fastapi/`

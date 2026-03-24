@@ -1,7 +1,35 @@
 from typing import Optional
 from fastapi import FastAPI
+from pydantic import BaseModel
+from enum import Enum
 
 app = FastAPI()
+
+class CardType(str, Enum):
+    """The type of the card"""
+    ATTACK = "attack"
+    SKILL = "skill"
+    POWER = "power"
+    STATUS = "status"
+    CURSE = "curse"
+
+class Card(BaseModel):
+    name: str
+    energy: int
+    card_type: CardType
+    damage: int
+    description: Optional[str] = None
+
+class Character(BaseModel):
+    name: str
+    health: int
+    cards: list[Card]
+
+class CardResponse(BaseModel):
+    """Define what API returns"""
+    name: str
+    card_type: CardType
+    energy: int
 
 
 # Route decorator - connects URL path (i.e. endpoint) to a python function
@@ -22,6 +50,15 @@ def about():
 def get_items_query(skip: int = 0, limit: int = 10):
     return {"skip": skip, "limit": limit}
 
+
+@app.post("/cards")
+def create_card(card: Card):
+    return {"message": f"Created card: {card.name}", "card": card}
+
+# Although we sent the entire card, the model will only return the fields inside CardResponse
+@app.post("/cards/preview", response_model=CardResponse)
+def preview_card(card:Card):
+    return card
 
 # Called a path parameter
 @app.get("/character/{character_name}")
@@ -47,4 +84,13 @@ def get_character_cards(character_name: str, card_type: Optional[str] = None, en
         "character": character_name,
         "card_type": card_type,
         "energy": energy
+    }
+
+@app.post("/characters/")
+def create_card_for_character(character: Character):
+    """Create a new character with cards"""
+    return {
+        "character": character.name,
+        "health": character.health,
+        "cards": character.cards
     }

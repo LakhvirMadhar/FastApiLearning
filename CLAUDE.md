@@ -7,8 +7,8 @@ Claude is a tutor/guide. The user types all code themselves. Claude gives small 
 Lessons go in `lessons/fastapi/` as `lesson_XX_name.md`. Each lesson follows this structure:
 1. **What We're Doing** — one-line summary of the task
 2. **Why / Context** — explain the reasoning before showing syntax
-3. **Concepts** — explain the new concepts with examples
-4. **Your Task** — specific instructions for what to type and try
+3. **Concepts** — explain the new concepts with examples. Include a small **"Try it:"** task after each concept so the user practices as they go.
+4. **Your Task** — summary checklist at the end covering everything from the inline tasks
 
 Keep explanations conversational and verbose — not just reference tables or terse bullet points. The user learns better by reading fuller explanations with context, analogies, and reasoning. Short one-liners get skimmed and don't stick. This applies to concept introductions too — don't just state what something is in one sentence and jump to the code. Explain *why* it exists, what role it plays, and how it connects to what the user already knows before showing syntax. If the user asks a question during a lesson, add the answer to the relevant lesson doc so it's there for future reference.
 
@@ -42,29 +42,37 @@ This keeps the lesson scannable and prevents everything from blending into one f
 - Lesson 04: Path operations — route decorators, path parameters, query parameters
 - Lesson 05: Pydantic models — request/response schemas, type validation, nested models
 - Lesson 06: Response models and status codes — controlling what your API returns
+- Lesson 07: Error handling — `HTTPException`, custom exception handlers, consistent error responses
+- **Quiz: Lessons 01–05** — comprehensive review covering HTTP fundamentals, APIs/JSON, FastAPI setup, path/query parameters, and Pydantic models
 
-### Step 3: Dependency Injection (not started)
-- Lesson 07: `Depends()` — shared logic, reusable dependencies, sub-dependencies
+### Step 3: Project Structure (not started)
+- Lesson 08: `APIRouter` and project organization — splitting routes across files, the `app/` package pattern, services layer
 
-### Step 4: Async vs Sync (not started)
-- Lesson 08: `async def` vs `def` — when to use which, how FastAPI handles I/O-bound work
+### Step 4: Dependency Injection (not started)
+- Lesson 09: `Depends()` — shared logic, reusable dependencies, sub-dependencies
 
-### Step 5: Database Integration (not started)
-- Lesson 09: SQLAlchemy setup — connecting to Postgres, defining models
-- Lesson 10: CRUD operations — create, read, update, delete with the database
-- Lesson 11: Alembic migrations — managing schema changes over time
+### Step 5: Async vs Sync (not started)
+- Lesson 10: `async def` vs `def` — when to use which, how FastAPI handles I/O-bound work, `BackgroundTasks` for fire-and-forget work
 
-### Step 6: Auth & Middleware (not started)
-- Lesson 12: Middleware and CORS — request/response processing, cross-origin setup
-- Lesson 13: Authentication — OAuth2 password flow, JWT tokens, API tokens, protecting routes
+### Step 6: Configuration (not started)
+- Lesson 11: `pydantic-settings` and `.env` files — managing database URLs, secrets, and environment-specific config
 
-### Step 7: Testing (not started)
-- Lesson 14: TestClient + pytest — writing and running API tests
+### Step 7: Database Integration (not started)
+- Lesson 12: SQLAlchemy setup — connecting to Postgres, defining models
+- Lesson 13: CRUD operations — create, read, update, delete with the database, paginated list endpoints
+- Lesson 14: Alembic migrations — managing schema changes over time
 
-### Step 8: Security (not started)
-- Lesson 15: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI
+### Step 8: Auth & Middleware (not started)
+- Lesson 15: Middleware and CORS — request/response processing, cross-origin setup
+- Lesson 16: Authentication — OAuth2 password flow, JWT tokens, API tokens, protecting routes
 
-### Step 9: Build a Real Project (not started)
+### Step 9: Testing (not started)
+- Lesson 17: TestClient + pytest — writing and running API tests
+
+### Step 10: Security (not started)
+- Lesson 18: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI
+
+### Step 11: Build a Real Project (not started)
 - Build a Gator Days comic API — scrape comic data from Reddit, store it through our own FastAPI endpoints, serve it back out
 - Use httpx as the client to call our own API, closing the full client/server loop
 - Apply everything learned — routes, models, database, auth, tests

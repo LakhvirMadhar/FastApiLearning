@@ -53,6 +53,7 @@ This keeps the lesson scannable and prevents everything from blending into one f
 
 ### Step 5: Async vs Sync (not started)
 - Lesson 10: `async def` vs `def` — when to use which, how FastAPI handles I/O-bound work, `BackgroundTasks` for fire-and-forget work
+- **Quiz: Lessons 01–10** — spaced repetition review recycling earlier questions plus new material from lessons 06–10
 
 ### Step 6: Configuration (not started)
 - Lesson 11: `pydantic-settings` and `.env` files — managing database URLs, secrets, and environment-specific config
@@ -70,7 +71,7 @@ This keeps the lesson scannable and prevents everything from blending into one f
 - Lesson 17: TestClient + pytest — writing and running API tests
 
 ### Step 10: Security (not started)
-- Lesson 18: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI
+- Lesson 18: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI. Include real-world example: serpAPI leaking API keys in query params and error messages (API keys should go in headers, error handlers should sanitize sensitive data)
 
 ### Step 11: Build a Real Project (not started)
 - Build a Gator Days comic API — scrape comic data from Reddit, store it through our own FastAPI endpoints, serve it back out

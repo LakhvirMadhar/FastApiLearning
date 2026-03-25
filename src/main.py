@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, status
 from pydantic import BaseModel
 from enum import Enum
 
@@ -25,11 +25,18 @@ class Character(BaseModel):
     health: int
     cards: list[Card]
 
+class CharacterResponse(BaseModel):
+    character: str
+
 class CardResponse(BaseModel):
     """Define what API returns"""
     name: str
     card_type: CardType
     energy: int
+
+class BlessingResponse(BaseModel):
+    """Define what blessing to return"""
+    blessing_name: str
 
 
 # Route decorator - connects URL path (i.e. endpoint) to a python function
@@ -43,20 +50,34 @@ def root():
 def about():
     return {"message": "This is my first FastAPI application"}
 
+@app.get("/neow/blessings/", response_model=list[BlessingResponse])
+def neow_blessing():
+    """"""
+    blessings = [
+      {"blessing_name": "Gain 100 Gold", "blessing_description": "Receive 100 gold", "blessing_secret": "bonus_tier_1"},
+      {"blessing_name": "Random Rare Card", "blessing_description": "Obtain a random rare card", "blessing_secret": "bonus_tier_2"},
+    ]
+
+    return blessings
+
 
 # Called a query parameter
 # For routes, it's good practice to put the base route first, just like when making python functions
-@app.get("/cards")
-def get_items_query(skip: int = 0, limit: int = 10):
-    return {"skip": skip, "limit": limit}
+@app.get("/cards", response_model=list[CardResponse])
+def get_cards(skip: int = 0, limit: int = 10):
+    cards = [
+        {"name": "Strike", "energy":1, "card_type": "attack", "damage": 6},
+        {"name": "Strike", "energy":1, "card_type": "attack", "damage": 6},
+    ]
+    return cards[skip: skip + limit]
 
 
-@app.post("/cards")
+@app.post("/cards", status_code=status.HTTP_201_CREATED)
 def create_card(card: Card):
     return {"message": f"Created card: {card.name}", "card": card}
 
 # Although we sent the entire card, the model will only return the fields inside CardResponse
-@app.post("/cards/preview", response_model=CardResponse)
+@app.post("/cards/preview", response_model=CardResponse, status_code=status.HTTP_201_CREATED)
 def preview_card(card:Card):
     return card
 
@@ -86,7 +107,7 @@ def get_character_cards(character_name: str, card_type: Optional[str] = None, en
         "energy": energy
     }
 
-@app.post("/characters/")
+@app.post("/characters/", status_code=status.HTTP_201_CREATED, response_model=CharacterResponse)
 def create_card_for_character(character: Character):
     """Create a new character with cards"""
     return {
@@ -94,3 +115,13 @@ def create_card_for_character(character: Character):
         "health": character.health,
         "cards": character.cards
     }
+
+@app.delete("/cards/{card_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_card(card_id:int):
+    # find card in database to then delete
+    return None
+
+@app.put("/cards/{card_id}", status_code=status.HTTP_200_OK)
+def update_card(card: Card, card_id: int):
+    # Again, database logic here
+    return {"card": card, "card_id": card_id}

@@ -1,5 +1,5 @@
 from typing import Optional
-from fastapi import FastAPI, status
+from fastapi import FastAPI, status, HTTPException
 from pydantic import BaseModel
 from enum import Enum
 
@@ -38,6 +38,10 @@ class BlessingResponse(BaseModel):
     """Define what blessing to return"""
     blessing_name: str
 
+cards= {
+    "1": {"name": "Strike", "energy": 1, "card_type": "attack"},
+    "2": {"name": "Defend", "energy": 1, "card_type": "skill"}
+}
 
 # Route decorator - connects URL path (i.e. endpoint) to a python function
 # "/" is root URL
@@ -72,8 +76,28 @@ def get_cards(skip: int = 0, limit: int = 10):
     return cards[skip: skip + limit]
 
 
+@app.get("/cards/{card_id}")
+def get_card(card_id: str):
+    if card_id not in cards:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail={
+                "message": "Card not found",
+                "card_id": card_id,
+                "suggestion": "Use GET /cards to see available cards"
+            }
+        )
+    
+    return cards[card_id]
+
+
 @app.post("/cards", status_code=status.HTTP_201_CREATED)
 def create_card(card: Card):
+    if card.name in [card["name"] for card in cards.values()]:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Card '{card.name} already exists'"
+        )
     return {"message": f"Created card: {card.name}", "card": card}
 
 # Although we sent the entire card, the model will only return the fields inside CardResponse

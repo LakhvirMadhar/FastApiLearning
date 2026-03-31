@@ -21,4 +21,3 @@ def root():
 @app.get("/about")
 def about():
     return {"message": "This is my first FastAPI application"}
-

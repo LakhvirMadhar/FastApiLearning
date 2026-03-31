@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 class CardType(str, Enum):
     """The type of the card"""
+
     ATTACK = "attack"
     SKILL = "skill"
     POWER = "power"
@@ -23,6 +24,7 @@ class Card(BaseModel):
 
 class CardResponse(BaseModel):
     """Define what API returns"""
+
     name: str
     card_type: CardType
     energy: int

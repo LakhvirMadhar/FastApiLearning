@@ -1,6 +1,18 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import (
+    APIRouter,
+    HTTPException,
+    status,
+    Depends,
+)
 
-from src.schemas.cards import Card, CardResponse
+from src.schemas.cards import (
+    Card,
+    CardResponse,
+)
+from src.dependencies.pagination import (
+    PaginationParams,
+    validated_pagination,
+)
 
 router = APIRouter()
 
@@ -13,12 +25,12 @@ cards = {
 # Called a query parameter
 # For routes, it's good practice to put the base route first, just like when making python functions
 @router.get("/", response_model=list[CardResponse])
-def get_cards(skip: int = 0, limit: int = 10):
+def get_cards(pagination: PaginationParams = Depends(validated_pagination)):
     cards = [
         {"name": "Strike", "energy": 1, "card_type": "attack", "damage": 6},
-        {"name": "Strike", "energy": 1, "card_type": "attack", "damage": 6},
+        {"name": "Bowling Ball", "energy": 1, "card_type": "attack", "damage": 6},
     ]
-    return cards[skip : skip + limit]
+    return cards[pagination.skip : pagination.skip + pagination.limit]
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)

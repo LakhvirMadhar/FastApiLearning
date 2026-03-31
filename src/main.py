@@ -1,12 +1,18 @@
-from fastapi import FastAPI
+from fastapi import (
+    FastAPI,
+    Depends,
+)
 
 from src.routers.cards import router as cards_router
 from src.routers.neow import router as neow_router
 from src.routers.characters import router as character_router
+from src.dependencies.time_logger import get_datetime
 
 app = FastAPI()
 
-app.include_router(cards_router, prefix="/cards", tags=["Cards"])
+app.include_router(
+    cards_router, prefix="/cards", tags=["Cards"], dependencies=[Depends(get_datetime)]
+)
 app.include_router(neow_router, prefix="/neow", tags=["Neow"])
 app.include_router(character_router, prefix="/character", tags=["Character"])
 

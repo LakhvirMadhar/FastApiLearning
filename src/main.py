@@ -3,6 +3,7 @@ from fastapi import (
     Depends,
 )
 
+from src.config import settings
 from src.routers.cards import router as cards_router
 from src.routers.neow import router as neow_router
 from src.routers.characters import router as character_router
@@ -31,3 +32,8 @@ def root():
 @app.get("/about")
 def about():
     return {"message": "This is my first FastAPI application"}
+
+
+@app.get("/info")
+def app_info():
+    return {"app_name": settings.app_name, "debug": settings.debug}

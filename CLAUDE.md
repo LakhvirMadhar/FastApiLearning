@@ -60,7 +60,7 @@ This keeps the lesson scannable and prevents everything from blending into one f
 
 ### Step 7: Database Integration (not started)
 - Lesson 12: SQLAlchemy setup — connecting to Postgres, defining models
-- Lesson 13: CRUD operations — create, read, update, delete with the database, paginated list endpoints
+- Lesson 13: CRUD operations — create, read, update, delete with the database, paginated list endpoints. Cover both `PUT` (full replacement) and `PATCH` (partial update), and explain why `PATCH` schemas need all-optional fields (separate `XxxUpdate` schema vs the create schema).
 - Lesson 14: Alembic migrations — managing schema changes over time
 
 ### Step 8: Auth & Middleware (not started)
@@ -71,12 +71,21 @@ This keeps the lesson scannable and prevents everything from blending into one f
 - Lesson 17: TestClient + pytest — writing and running API tests
 
 ### Step 10: Security (not started)
-- Lesson 18: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI. Include real-world example: serpAPI leaking API keys in query params and error messages (API keys should go in headers, error handlers should sanitize sensitive data)
+- Lesson 18: OWASP Top 10 for APIs — SQL injection, broken auth, broken access control, security misconfiguration, and how to prevent them in FastAPI. Include real-world example: serpAPI leaking API keys in query params and error messages (API keys should go in headers, error handlers should sanitize sensitive data). Also cover: pydantic-settings leaking env var field names in error tracebacks when `extra="forbid"` (the default) — in production, these tracebacks can end up in logging services, revealing what secrets exist.
 
 ### Step 11: Build a Real Project (not started)
 - Build a Gator Days comic API — scrape comic data from Reddit, store it through our own FastAPI endpoints, serve it back out
 - Use httpx as the client to call our own API, closing the full client/server loop
 - Apply everything learned — routes, models, database, auth, tests
+
+### Step 12: Refactoring (not started)
+- Revisit Lesson 07: Implement custom exception handlers across the Gator Days project — replace scattered `HTTPException` raises with custom exception classes + global handlers. This is the right time because the codebase is big enough to feel the pain of `HTTPException` everywhere.
+
+### Step 13: Deployment (not started)
+- Lesson 19: Deploying a FastAPI app — packaging the app for production, environment variables in production, choosing a host (Render or Railway recommended for first deploy), connecting a managed Postgres database, running migrations against the deployed database, and basic monitoring/logs. The goal is to get the Gator Days project from "running on my machine" to "live on the internet at a real URL."
+
+### Step 14: Second Project — LLM Hosting API (not started)
+- Build an LLM hosting provider API (like OpenRouter/Together AI) — users authenticate with API keys, send requests to different model endpoints, responses are routed and returned. Covers: auth (API key management), database (user accounts, usage tracking), rate limiting, background tasks (request logging), config management (model API keys in `.env`). This is a solo project with minimal guidance — apply everything learned independently.
 
 ## Project Structure
 

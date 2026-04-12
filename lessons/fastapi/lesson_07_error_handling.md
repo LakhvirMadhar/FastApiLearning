@@ -154,33 +154,77 @@ Every error from your API should follow the same format. If one endpoint returns
 
 FastAPI's `HTTPException` already gives you consistency — every error comes back as `{"detail": "..."}`. Stick with this format. When you get to building the Gator Days project, every error your API returns will have the same shape, making it easy for your httpx scraper to handle failures.
 
-If you ever need a completely custom error format across your entire API, you can create a **custom exception handler**:
+As your API grows, you'll notice a problem: every route that can fail has its own `raise HTTPException(...)` with its own status code and message format. If you have 30 routes and your frontend team asks you to add a `trace_id` field to every error, you'd have to update 30 raise statements. That's where **custom exception handlers** come in.
+
+The idea: instead of formatting the error at every raise site, you split the work into two parts — a custom exception class that carries the data, and a global handler that formats the response.
+
+#### Step 1: Define a custom exception
 
 ```python
+# src/exceptions.py
+class NotFoundError(Exception):
+    def __init__(self, resource: str, resource_id: int | str):
+        self.resource = resource
+        self.resource_id = resource_id
+```
+
+This is a plain Python class. It doesn't know about HTTP — it just holds what went wrong.
+
+#### Step 2: Register a global handler
+
+```python
+# src/main.py
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from src.exceptions import NotFoundError
 
 app = FastAPI()
 
-class CardNotFoundError(Exception):
-    def __init__(self, card_id: str):
-        self.card_id = card_id
-
-@app.exception_handler(CardNotFoundError)
-async def card_not_found_handler(request: Request, exc: CardNotFoundError):
+@app.exception_handler(NotFoundError)
+def handle_not_found(request: Request, exc: NotFoundError):
     return JSONResponse(
-        status_code=status.HTTP_404_NOT_FOUND,
+        status_code=404,
         content={
-            "error": "card_not_found",
-            "card_id": exc.card_id,
-            "message": f"Card {exc.card_id} does not exist"
+            "code": f"{exc.resource.upper()}_NOT_FOUND",
+            "message": f"{exc.resource} {exc.resource_id} not found",
         }
     )
 ```
 
-Now anywhere in your code, you can `raise CardNotFoundError("999")` and it'll automatically return the formatted response. This is overkill for small APIs but becomes useful when you have many endpoints that need the same error format.
+`@app.exception_handler(NotFoundError)` tells FastAPI: "Whenever a `NotFoundError` is raised anywhere in my app — any route, any dependency, any service function — catch it and run this function." All error formatting lives here, in one place.
 
-You don't need to implement this now — just know it exists. `HTTPException` with `detail` covers most cases.
+#### Step 3: Raise in your routes
+
+```python
+@router.get("/cards/{card_id}")
+def get_card(card_id: int):
+    card = find_card(card_id)
+    if not card:
+        raise NotFoundError("Card", card_id)
+    return card
+
+@router.get("/characters/{character_id}")
+def get_character(character_id: int):
+    character = find_character(character_id)
+    if not character:
+        raise NotFoundError("Character", character_id)
+    return character
+```
+
+Compare this to the `HTTPException` version — each route is one line instead of five. The routes don't know about status codes or JSON structure. They just say "this thing wasn't found" and the handler takes care of the rest.
+
+#### Why this matters in production
+
+- **One place to change.** Want to add `trace_id` to every error? Change the handler once, not 30 routes.
+- **Works from anywhere.** A service function deep in your codebase can `raise NotFoundError(...)` without importing anything from FastAPI. The handler catches it no matter how deep in the call stack.
+- **Multiple exception types.** You can register handlers for `NotFoundError` (404), `ConflictError` (409), `ForbiddenError` (403), etc. Each gets its own handler, status code, and format.
+- **Separation of concerns.** Routes handle business logic. Handlers handle error presentation. Two different jobs, two different places.
+
+#### When to use which
+
+`HTTPException` is fine for small APIs and one-off errors. Custom exception handlers are the standard in production codebases with many endpoints that need consistent error formatting. You don't need to implement this right now — but you will use this pattern when the codebase grows, especially once you have database operations that can fail in predictable ways.
+
+**Try it:** Create a `src/exceptions.py` file with a `NotFoundError` class. Register a handler for it in `main.py`. Update one of your routes to raise `NotFoundError` instead of `HTTPException`. Test it in Swagger and confirm the response format matches what your handler returns.
 
 ---
 

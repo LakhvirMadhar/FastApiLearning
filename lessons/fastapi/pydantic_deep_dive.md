@@ -323,6 +323,28 @@ That's the reuse story: once you've learned Pydantic, you get configuration mana
 
 ---
 
+### `pydantic.mypy Plugin` — Teaching Mypy About Pydantic
+
+Mypy doesn't understand how Pydantic works out of the box. It treats your Pydantic classes like regular Python classes, which causes false errors. For example, if your `Settings` class has a required `database_url` field with no default, mypy will complain that `Settings()` is missing the `database_url` argument — even though pydantic-settings pulls it from environment variables at runtime. Mypy doesn't know about that runtime behavior.
+
+The fix: Pydantic ships with a mypy plugin built into the `pydantic` package itself. You don't install anything new — the plugin code is already on your machine because you installed `pydantic` (which comes with FastAPI). You just tell mypy to load it:
+
+```toml
+# pyproject.toml
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+```
+
+Once enabled, the plugin teaches mypy how Pydantic classes actually behave:
+- `BaseSettings` fields can be populated from env vars, so `Settings()` with no arguments is valid
+- `BaseModel` fields with defaults are optional in the constructor
+- `model_config = ConfigDict(frozen=True)` makes fields read-only, and mypy will flag assignments
+- `Field(alias=...)` is understood so mypy doesn't complain about mismatched names
+
+Without the plugin, you'd end up sprinkling `# type: ignore` comments throughout your code to silence false errors. With it, mypy and Pydantic work together instead of fighting each other.
+
+---
+
 ### `v1 vs v2` — A Quick Historical Note
 
 Pydantic had a major version bump from v1 to v2 in 2023, and the internals were rewritten in Rust (`pydantic-core`) for a big speed boost. A lot of the method names changed in the process, so if you find an old Stack Overflow answer or blog post, the code may not match what you've been learning.

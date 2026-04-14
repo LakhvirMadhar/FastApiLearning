@@ -6,6 +6,7 @@ class Settings(BaseSettings):
 
     app_name: str = "My FastAPI App"
     debug: bool = False
+    database_url: str
 
 
 settings = Settings()

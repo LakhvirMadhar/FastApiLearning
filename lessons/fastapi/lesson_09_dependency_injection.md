@@ -70,21 +70,72 @@ class PaginationParams(BaseModel):
 
 def pagination_params(skip: int = 0, limit: int = 10) -> PaginationParams:
     return PaginationParams(skip=skip, limit=limit)
-
-@router.get("/cards")
-def get_cards(pagination: PaginationParams = Depends(pagination_params)):
-    return cards[pagination.skip: pagination.skip + pagination.limit]
 ```
 
 Now it's `pagination.skip` instead of `pagination["skip"]` — cleaner, type-safe, and your editor gives you autocomplete.
 
-**Try it:** Create a `PaginationParams` schema and update your dependency to return it. Verify Swagger still works the same way.
+**Try it:** Create a `PaginationParams` schema and update your dependency to return it.
+
+---
+
+### `Annotated` — The Modern Way to Write Dependencies
+
+The `= Depends(...)` default value pattern works, but it has a flaw: type checkers like mypy and pyright get confused. The parameter looks like it has a default value of a `Depends` object, but at runtime it's actually the return value of your dependency function. Type checkers see the mismatch and either complain or need suppression comments (`# type: ignore`) to stay quiet. You've probably seen this at work — people sprinkling `# type: ignore` on route parameters.
+
+The fix is `Annotated` from the `typing` module. Instead of putting `Depends()` as a default value, you attach it to the type hint itself:
+
+```python
+from typing import Annotated
+from fastapi import Depends
+
+PaginationDep = Annotated[PaginationParams, Depends(pagination_params)]
+
+@router.get("/cards")
+def get_cards(pagination: PaginationDep):
+    return cards[pagination.skip: pagination.skip + pagination.limit]
+```
+
+FastAPI recognizes `Annotated[SomeType, Depends(...)]` and handles it the same way — the dependency still runs, the result still gets injected. But now the type checker sees `pagination: PaginationParams` (effectively), which is correct, and the suppression comments go away. Note that `Annotated` uses square brackets `[]`, not parentheses `()` — it's a special typing form, not a regular function call.
+
+The aliases belong in a central `dependencies.py` file. The individual files (`pagination.py`, `database.py`, etc.) define the dependency functions, and `dependencies.py` imports them and defines all the `Annotated` aliases in one place:
+
+```python
+# src/dependencies/pagination.py
+def pagination_params(skip: int = 0, limit: int = 10) -> PaginationParams:
+    return PaginationParams(skip=skip, limit=limit)
+```
+
+```python
+# src/dependencies.py
+from typing import Annotated
+from fastapi import Depends
+from src.dependencies.pagination import pagination_params
+from src.schemas.pagination import PaginationParams
+
+PaginationDep = Annotated[PaginationParams, Depends(pagination_params)]
+# SessionDep, AuthDep, etc. all go here too as the project grows
+```
+
+```python
+# src/routers/cards.py
+from src.dependencies import PaginationDep
+
+@router.get("/cards")
+def get_cards(pagination: PaginationDep):
+    ...
+```
+
+Every router imports from `src.dependencies` — one consistent source. If a dependency function moves, is renamed, or gets swapped out, you update `dependencies.py` and nothing else breaks. Without this, you'd have `Depends(pagination_params)` scattered across every router file and no single place to change it.
+
+This is the pattern the FastAPI docs now recommend for all dependencies.
+
+**Try it:** Define `PaginationDep` in your `pagination.py` file and update your route to use it as a plain type hint.
 
 ---
 
 ### `Where Dependencies Live` — File Organization
 
-Dependencies get their own folder: `src/dependencies/`. Each file holds related dependencies:
+Dependencies get their own folder: `src/dependencies/`. Each file holds related dependencies and their `Annotated` aliases:
 
 ```
 src/
@@ -93,15 +144,15 @@ src/
 │   └── pagination.py
 ```
 
-Then import them in your router files:
+Then import the alias in your router files:
 
 ```python
-from src.dependencies.pagination import pagination_params
+from src.dependencies.pagination import PaginationDep
 ```
 
 This follows the same pattern as schemas and routers — each concern gets its own place.
 
-**Try it:** Create `src/dependencies/pagination.py`, move your pagination dependency there, and import it in your router.
+**Try it:** Create `src/dependencies/pagination.py`, move your pagination dependency and `PaginationDep` alias there, and import it in your router.
 
 ---
 
@@ -117,7 +168,7 @@ Every route on that router will run `some_dependency` before executing. This is 
 
 The difference: with router-level dependencies, the return value isn't injected into the route function. The dependency runs (and can raise exceptions to block the request), but the route doesn't receive its return value. This makes sense for "gatekeeper" dependencies like auth checks — the route doesn't need the return value, it just needs the check to pass.
 
-If a route *does* need the return value (like pagination), keep it as a parameter-level dependency with `Depends()` in the function signature.
+If a route *does* need the return value (like pagination), use an `Annotated` alias as a type hint in the function signature.
 
 **Try it:** Create a simple logging dependency that prints the current time when a request comes in. Apply it at the router level so every route in your cards router logs the request time. Check your terminal output when you hit different endpoints.
 
@@ -128,32 +179,50 @@ If a route *does* need the return value (like pagination), keep it as a paramete
 Dependencies can depend on other dependencies. FastAPI resolves the entire chain automatically.
 
 ```python
+# src/dependencies/pagination.py
+from typing import Annotated
+from fastapi import Depends, HTTPException, status
+from pydantic import BaseModel
+
+class PaginationParams(BaseModel):
+    skip: int = 0
+    limit: int = 10
+
 def pagination_params(skip: int = 0, limit: int = 10) -> PaginationParams:
     return PaginationParams(skip=skip, limit=limit)
 
-def validated_pagination(pagination: PaginationParams = Depends(pagination_params)) -> PaginationParams:
+PaginationDep = Annotated[PaginationParams, Depends(pagination_params)]
+
+def validated_pagination(pagination: PaginationDep) -> PaginationParams:
     if pagination.limit > 100:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Limit cannot exceed 100"
         )
     return pagination
 
+ValidatedPaginationDep = Annotated[PaginationParams, Depends(validated_pagination)]
+```
+
+```python
+# src/routers/cards.py
+from src.dependencies.pagination import ValidatedPaginationDep
+
 @router.get("/cards")
-def get_cards(pagination: PaginationParams = Depends(validated_pagination)):
+def get_cards(pagination: ValidatedPaginationDep):
     ...
 ```
 
 When a request hits `get_cards`:
-1. FastAPI sees `Depends(validated_pagination)`
-2. Looks at `validated_pagination` and sees it depends on `Depends(pagination_params)`
+1. FastAPI sees `ValidatedPaginationDep` and resolves `Depends(validated_pagination)`
+2. Looks at `validated_pagination` and sees it depends on `PaginationDep`, which resolves `Depends(pagination_params)`
 3. Calls `pagination_params` first, gets the result
 4. Passes that result into `validated_pagination`
 5. Passes *that* result into `get_cards`
 
 The chain can go as deep as you need. FastAPI figures out the order and calls everything in the right sequence. This is how real applications compose complex behavior from small, reusable pieces — authentication checks that depend on token parsing, which depends on header extraction, etc.
 
-**Try it:** Create a `validated_pagination` dependency that wraps `pagination_params` and raises an `HTTPException` if `limit` is over 100. Use it in a route and test with `?limit=200` in Swagger to see the error.
+**Try it:** Create a `validated_pagination` dependency that wraps `PaginationDep` and raises an `HTTPException` if `limit` is over 100. Define `ValidatedPaginationDep` and use it in a route. Test with `?limit=200` in Swagger to see the error.
 
 ---
 
@@ -162,7 +231,9 @@ The chain can go as deep as you need. FastAPI figures out the order and calls ev
 1. Create `src/dependencies/` folder with `__init__.py` and `pagination.py`
 2. Write a `PaginationParams` schema (or put it in your existing schemas)
 3. Write a `pagination_params` dependency function that returns `PaginationParams`
-4. Write a `validated_pagination` sub-dependency that caps `limit` at 100
-5. Use the dependency in your `get_cards` route
-6. Create a simple logging dependency and apply it at the router level on your cards router
-7. Run the server — test pagination in Swagger, try `?limit=200` to see the validation error, and check your terminal for the log output
+4. Define `PaginationDep = Annotated[PaginationParams, Depends(pagination_params)]`
+5. Write a `validated_pagination` sub-dependency that uses `PaginationDep` and caps `limit` at 100
+6. Define `ValidatedPaginationDep = Annotated[PaginationParams, Depends(validated_pagination)]`
+7. Use `ValidatedPaginationDep` in your `get_cards` route as a plain type hint
+8. Create a simple logging dependency and apply it at the router level on your cards router
+9. Run the server — test pagination in Swagger, try `?limit=200` to see the validation error, and check your terminal for the log output

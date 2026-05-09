@@ -37,7 +37,7 @@ This keeps the lesson scannable and prevents everything from blending into one f
 - Lesson 01: HTTP request/response cycle — methods (GET, POST, PUT, DELETE), status codes, headers, bodies
 - Lesson 02: APIs and JSON — what a REST API is, how JSON works as the data format
 
-### Step 2: FastAPI Basics (in progress)
+### Step 2: FastAPI Basics (done)
 - Lesson 03: Hello FastAPI — install FastAPI + Uvicorn, create `main.py`, run the dev server
 - Lesson 04: Path operations — route decorators, path parameters, query parameters
 - Lesson 05: Pydantic models — request/response schemas, type validation, nested models
@@ -45,21 +45,21 @@ This keeps the lesson scannable and prevents everything from blending into one f
 - Lesson 07: Error handling — `HTTPException`, custom exception handlers, consistent error responses
 - **Quiz: Lessons 01–05** — comprehensive review covering HTTP fundamentals, APIs/JSON, FastAPI setup, path/query parameters, and Pydantic models
 
-### Step 3: Project Structure (not started)
+### Step 3: Project Structure (done)
 - Lesson 08: `APIRouter` and project organization — splitting routes across files, the `app/` package pattern, services layer
 
-### Step 4: Dependency Injection (not started)
+### Step 4: Dependency Injection (done)
 - Lesson 09: `Depends()` — shared logic, reusable dependencies, sub-dependencies
 
-### Step 5: Async vs Sync (not started)
+### Step 5: Async vs Sync (done)
 - Lesson 10: `async def` vs `def` — when to use which, how FastAPI handles I/O-bound work, `BackgroundTasks` for fire-and-forget work
-- **Quiz: Lessons 01–10** — spaced repetition review recycling earlier questions plus new material from lessons 06–10
+- **Quiz: Lessons 01–11** — spaced repetition review recycling earlier questions plus new material from lessons 06–11
 
-### Step 6: Configuration (not started)
+### Step 6: Configuration (done)
 - Lesson 11: `pydantic-settings` and `.env` files — managing database URLs, secrets, and environment-specific config
 
-### Step 7: Database Integration (not started)
-- Lesson 12: SQLAlchemy setup — connecting to Postgres, defining models
+### Step 7: Database Integration (in progress — paused to revisit Python fundamentals)
+- Lesson 12: SQLAlchemy setup — connecting to Postgres, defining models (done)
 - Lesson 13: CRUD operations — create, read, update, delete with the database, paginated list endpoints. Cover both `PUT` (full replacement) and `PATCH` (partial update), and explain why `PATCH` schemas need all-optional fields (separate `XxxUpdate` schema vs the create schema).
 - Lesson 14: Alembic migrations — managing schema changes over time
 

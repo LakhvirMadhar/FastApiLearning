@@ -50,6 +50,9 @@ This keeps the lesson scannable and prevents everything from blending into one f
 
 ### Step 4: Dependency Injection (done)
 - Lesson 09: `Depends()` — shared logic, reusable dependencies, sub-dependencies
+- Lesson 09.5: `Annotated` — attaching metadata to type hints, how FastAPI uses it for dependencies, reusable type aliases
+- Lesson 09.6: `Depends` under the hood — what dependency injection actually is, why you can't just call the function yourself, how FastAPI builds and resolves the dependency graph
+- Lesson 09.7: Generator functions and `yield` — how yield pauses and resumes functions, try/finally for lifecycle management, why get_db uses yield instead of return
 
 ### Step 5: Async vs Sync (done)
 - Lesson 10: `async def` vs `def` — when to use which, how FastAPI handles I/O-bound work, `BackgroundTasks` for fire-and-forget work

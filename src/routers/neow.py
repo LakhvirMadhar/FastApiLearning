@@ -2,7 +2,7 @@ from fastapi import APIRouter
 
 from src.schemas.neow import BlessingResponse
 
-router = APIRouter()
+router = APIRouter(prefix="/neow", tags=["Neow"])
 
 
 @router.get("/blessings", response_model=list[BlessingResponse])

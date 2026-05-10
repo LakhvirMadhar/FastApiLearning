@@ -1,5 +1,6 @@
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
     status,
 )
@@ -11,8 +12,9 @@ from src.schemas.cards import (
 from src.dependencies.pagination import (
     ValidatedPaginationDep,
 )
+from src.dependencies.time_logger import get_datetime
 
-router = APIRouter()
+router = APIRouter(prefix="/cards", tags=["Cards"], dependencies=[Depends(get_datetime)])
 
 cards = {
     "1": {"name": "Strike", "energy": 1, "card_type": "attack"},

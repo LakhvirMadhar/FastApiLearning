@@ -5,7 +5,7 @@ from fastapi import APIRouter, status
 from src.schemas.characters import Character, CharacterResponse
 
 
-router = APIRouter()
+router = APIRouter(prefix="/character", tags=["Character"])
 
 
 # Called a path parameter

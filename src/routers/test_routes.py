@@ -3,7 +3,7 @@ import asyncio
 
 from fastapi import APIRouter
 
-router = APIRouter()
+router = APIRouter(tags=["Test"])
 
 
 # BAD - blocks the event loop, freezes the server

@@ -208,3 +208,69 @@ This is a restructuring lesson — you're moving code, not writing new features.
 7. Check that the Swagger docs show your endpoints grouped by tag (Cards, Characters, Neow)
 
 When it's working, show me your project structure and I'll review it. Next lesson covers dependency injection.
+
+---
+
+## Addendum: Two Better Patterns (applied later)
+
+These weren't part of the original lesson but came up during Lesson 13 prep. Both are recommended by the FastAPI docs.
+
+### Define `prefix` and `tags` on the router, not in `include_router`
+
+The lesson above puts prefix and tags in `main.py` when including the router:
+
+```python
+app.include_router(cards_router, prefix="/cards", tags=["Cards"])
+```
+
+The cleaner approach is to put them on the `APIRouter()` definition inside the router file itself:
+
+```python
+# src/routers/cards.py
+router = APIRouter(prefix="/cards", tags=["Cards"])
+```
+
+Then `include_router` needs no arguments:
+
+```python
+app.include_router(cards_router)
+```
+
+The router owns its own configuration. `main.py` doesn't need to know what prefix a router uses — that's the router's concern.
+
+### Central router registry in `routers/__init__.py`
+
+With five routers, `main.py` accumulates five imports and five `include_router` calls. With twenty routers, it becomes noise. The solution is to assemble all routers in one place and expose a single `api_router`:
+
+The FastAPI docs specifically recommend importing the submodule itself rather than using `as` aliases. The reason: every router file exports a variable called `router`. If you import two of them with aliases, you have to remember to alias every single one. More importantly, if you forget the alias, the second import silently overwrites the first:
+
+```python
+# This is a bug — users.router overwrites items.router silently
+from src.routers.items import router
+from src.routers.users import router
+```
+
+Importing the module instead sidesteps the problem entirely — `cards.router` and `neow.router` can never collide because they're namespaced under their module:
+
+```python
+# src/routers/__init__.py
+from fastapi import APIRouter
+from src.routers import cards, neow
+
+api_router = APIRouter()
+api_router.include_router(cards.router)
+api_router.include_router(neow.router)
+```
+
+Then `main.py` reduces to one import and one line:
+
+```python
+from src.routers import api_router
+app.include_router(api_router)
+```
+
+This works because importing a package always executes its `__init__.py` top to bottom, right at import time. So by the time `main.py`'s import line finishes, `api_router` is already a fully assembled object — the `APIRouter()` was instantiated, and all the `include_router` calls already ran. `main.py` is just registering the finished object with the app.
+
+This is a general Python truth, not just a FastAPI thing. It's also why `main.py` has `from src import models` with a `# noqa` comment — that line has no return value you use, but importing the package runs `models/__init__.py`, which registers all the SQLAlchemy models on `Base` as a side effect. Same mechanism.
+
+Adding a new router means touching only `routers/__init__.py` — `main.py` stays clean.

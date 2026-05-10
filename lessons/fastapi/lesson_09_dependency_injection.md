@@ -166,9 +166,28 @@ router = APIRouter(dependencies=[Depends(some_dependency)])
 
 Every route on that router will run `some_dependency` before executing. This is useful for things like authentication — instead of adding `Depends(verify_token)` to 15 routes, you put it on the router once.
 
-The difference: with router-level dependencies, the return value isn't injected into the route function. The dependency runs (and can raise exceptions to block the request), but the route doesn't receive its return value. This makes sense for "gatekeeper" dependencies like auth checks — the route doesn't need the return value, it just needs the check to pass.
+This is where it helps to have a clear mental model of the two different jobs `Depends()` can do:
 
-If a route *does* need the return value (like pagination), use an `Annotated` alias as a type hint in the function signature.
+**Dependency as injection** — you need the return value inside your function. FastAPI runs the dependency and hands its return value to your route as a named parameter:
+
+```python
+def get_cards(db: SessionDep):
+    cards = db.query(Card).all()  # db is the Session returned by get_db
+```
+
+**Dependency as a gate/side effect** — you just need it to run, you don't care what it returns. FastAPI runs it before the route, but injects nothing:
+
+```python
+router = APIRouter(dependencies=[Depends(verify_token)])
+# verify_token raises 401 if the token is bad, otherwise does nothing
+# the route never receives any value from it
+```
+
+The mental model: function parameter `Depends()` means "give me this value." `dependencies=[]` means "run this — I don't need what it returns."
+
+This is why `Annotated` aliases don't make sense for `dependencies=[]` — `Annotated` is for attaching dependency metadata to a type so FastAPI knows what value to inject into a parameter. When there's no parameter to inject into, there's nothing for `Annotated` to attach to.
+
+The real-world version of router-level dependencies is auth. You write a dependency that checks a JWT token and raises a 401 if it's invalid. Every route on that router is protected without adding anything to the individual function signatures.
 
 **Try it:** Create a simple logging dependency that prints the current time when a request comes in. Apply it at the router level so every route in your cards router logs the request time. Check your terminal output when you hit different endpoints.
 
@@ -223,6 +242,24 @@ When a request hits `get_cards`:
 The chain can go as deep as you need. FastAPI figures out the order and calls everything in the right sequence. This is how real applications compose complex behavior from small, reusable pieces — authentication checks that depend on token parsing, which depends on header extraction, etc.
 
 **Try it:** Create a `validated_pagination` dependency that wraps `PaginationDep` and raises an `HTTPException` if `limit` is over 100. Define `ValidatedPaginationDep` and use it in a route. Test with `?limit=200` in Swagger to see the error.
+
+---
+
+---
+
+### The Four Variations — Summary
+
+The core idea is simple: **a dependency is a function FastAPI calls for you before your route runs.** Everything else is just answering "what do you do with what it returns?" and "where do you attach it?":
+
+1. **Inject the return value into a route** — `db: SessionDep`, `pagination: ValidatedPaginationDep`. You need what the dependency returns, so it goes in the function signature.
+
+2. **Side effect only, no return value** — `dependencies=[Depends(verify_token)]` on a router or route. You just need it to run — to check something, log something, block the request. The return value is discarded.
+
+3. **Sub-dependencies** — a dependency that depends on another dependency. `validated_pagination` depends on `pagination_params`. FastAPI resolves the whole chain automatically in the right order.
+
+4. **Router-level vs route-level** — you can apply a dependency to one specific route, or to every route on a router at once.
+
+1 and 2 are the fundamental split. 3 and 4 are just "how deep can it go" and "where do you attach it." If you go back to the core idea whenever something feels confusing, the variation you're looking at will follow logically.
 
 ---
 

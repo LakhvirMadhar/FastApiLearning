@@ -31,6 +31,17 @@ In bullet point explanations, use a single dash (`-`) to separate the term from 
 
 This keeps the lesson scannable and prevents everything from blending into one flat wall of text.
 
+## Progress Tracking
+
+### Q2 2026 Goal (by July 1)
+Finish FastAPI core: Lessons 13–17 + Quiz 03 (covering 09.5–17).
+
+**Milestone:** "I learned FastAPI" — dependency injection with `Annotated`, ports and adapters architecture, database CRUD, migrations, auth, and testing.
+
+Lessons 18, the projects, and deployment spill into Q3.
+
+---
+
 ## Learning Path
 
 ### Step 1: HTTP Fundamentals (done)
@@ -61,7 +72,7 @@ This keeps the lesson scannable and prevents everything from blending into one f
 ### Step 6: Configuration (done)
 - Lesson 11: `pydantic-settings` and `.env` files — managing database URLs, secrets, and environment-specific config
 
-### Step 7: Database Integration (in progress — paused to revisit Python fundamentals)
+### Step 7: Database Integration (in progress)
 - Lesson 12: SQLAlchemy setup — connecting to Postgres, defining models (done)
 - Lesson 13: CRUD operations — create, read, update, delete with the database, paginated list endpoints. Cover both `PUT` (full replacement) and `PATCH` (partial update), and explain why `PATCH` schemas need all-optional fields (separate `XxxUpdate` schema vs the create schema).
 - Lesson 14: Alembic migrations — managing schema changes over time

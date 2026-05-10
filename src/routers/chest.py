@@ -3,7 +3,7 @@ from fastapi import (
     BackgroundTasks,
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Chest"])
 
 
 # Pretend this was an important function
